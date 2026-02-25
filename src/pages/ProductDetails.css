@@ -1,0 +1,322 @@
+/* src/pages/ProductDetails.css */
+.product-page {
+    padding-top: 40px;
+    padding-bottom: 80px;
+}
+
+.product-layout {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 50px;
+}
+
+/* Left Side Showcase */
+.product-img-box {
+    background-color: #121826;
+    /* Dark background matching the image */
+    border-radius: var(--radius-xl);
+    padding: 40px;
+    position: relative;
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 500px;
+    margin-bottom: 30px;
+}
+
+.new-arrival-badge {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background-color: rgba(0, 210, 255, 0.15);
+    border: 1px solid rgba(0, 210, 255, 0.4);
+    color: var(--accent-cyan);
+}
+
+.product-img-box img {
+    max-width: 100%;
+    max-height: 400px;
+    object-fit: contain;
+    filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.5));
+}
+
+.product-title {
+    font-size: 2.5rem;
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 10px;
+}
+
+.product-title em {
+    font-style: italic;
+    font-weight: 900;
+}
+
+.product-rating {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.stars {
+    color: #fbbf24;
+    letter-spacing: 2px;
+}
+
+.rating-text {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.product-description {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 30px;
+    font-size: 1.05rem;
+}
+
+.product-features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.feature-box {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+}
+
+.feature-val {
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: var(--accent-cyan);
+    font-style: italic;
+    margin-bottom: 5px;
+}
+
+.feature-label {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+/* Right Side Checkout */
+.checkout-card {
+    background-color: rgba(18, 24, 38, 0.5);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    padding: 30px;
+    backdrop-filter: blur(10px);
+}
+
+.price-header {
+    margin-bottom: 30px;
+}
+
+.price-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.price-display {
+    display: flex;
+    align-items: baseline;
+    gap: 15px;
+}
+
+.current-price {
+    font-size: 2.2rem;
+    font-weight: 900;
+    color: var(--accent-cyan);
+    font-style: italic;
+}
+
+.old-price {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    text-decoration: line-through;
+}
+
+.checkout-form .form-group {
+    margin-bottom: 20px;
+}
+
+.checkout-form label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+}
+
+.checkout-form input,
+.checkout-form textarea {
+    width: 100%;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    padding: 14px 16px;
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 0.95rem;
+    transition: var(--transition);
+}
+
+.checkout-form textarea {
+    resize: vertical;
+}
+
+.checkout-form input:focus,
+.checkout-form textarea:focus {
+    border-color: var(--accent-cyan);
+    outline: none;
+}
+
+.delivery-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.delivery-btn {
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+}
+
+.delivery-btn.active {
+    border-color: var(--accent-cyan);
+    background-color: rgba(0, 210, 255, 0.05);
+}
+
+.delivery-btn .bold {
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+}
+
+.delivery-btn .small {
+    color: var(--accent-cyan);
+    font-size: 0.75rem;
+}
+
+.delivery-note {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    font-style: italic;
+    margin-top: 8px;
+}
+
+.order-summary {
+    margin-top: 30px;
+    margin-bottom: 30px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.total-row {
+    margin-top: 20px;
+    margin-bottom: 0;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    align-items: center;
+}
+
+.total-price {
+    font-size: 1.5rem;
+    font-style: italic;
+}
+
+.action-btn {
+    width: 100%;
+    padding: 16px;
+    border-radius: var(--radius-md);
+    font-weight: 800;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.whatsapp-btn {
+    background-color: var(--accent-green);
+    color: #fff;
+    border: none;
+}
+
+.whatsapp-btn:hover {
+    background-color: var(--accent-green-hover);
+    transform: translateY(-2px);
+}
+
+.website-btn {
+    background-color: var(--accent-cyan);
+    color: #000;
+    border: none;
+}
+
+.website-btn:hover {
+    background-color: #fff;
+    transform: translateY(-2px);
+}
+
+.trust-badges {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+    padding: 0 10px;
+}
+
+.trust-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+}
+
+.trust-item span {
+    font-size: 1.2rem;
+}
+
+@media (max-width: 992px) {
+    .product-layout {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,0 +1,91 @@
+/* src/pages/Catalog.css */
+.catalog-page {
+    padding-top: 40px;
+    padding-bottom: 80px;
+    min-height: 70vh;
+}
+
+.catalog-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.catalog-title {
+    font-size: 3rem;
+    font-weight: 900;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+
+.catalog-desc {
+    color: var(--text-secondary);
+    max-width: 600px;
+    margin: 0 auto;
+    font-size: 1.05rem;
+}
+
+.catalog-filters {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 50px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    background-color: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 10px 24px;
+    border-radius: var(--radius-full);
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+    letter-spacing: 1px;
+}
+
+.filter-btn:hover {
+    border-color: rgba(0, 210, 255, 0.5);
+    color: var(--text-primary);
+}
+
+.filter-btn.active {
+    background-color: var(--accent-cyan);
+    color: #000;
+    border-color: var(--accent-cyan);
+}
+
+.catalog-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+}
+
+.no-products {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px;
+    background-color: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    border: 1px dashed var(--border-color);
+    color: var(--text-secondary);
+}
+
+@media (max-width: 1200px) {
+    .catalog-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 900px) {
+    .catalog-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .catalog-grid {
+        grid-template-columns: 1fr;
+    }
+}
