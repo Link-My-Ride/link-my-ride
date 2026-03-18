@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useShop } from '../../context/ShopContext';
 import { supabase } from '../../lib/supabase';
+import './AdminDashboard.css';
 
 const AdminProducts = () => {
     const { products, refreshProducts, loading } = useShop();
@@ -44,16 +45,12 @@ const AdminProducts = () => {
     const handleSave = async (e) => {
         e.preventDefault();
         
-        // Ensure specs and features are valid JSON arrays for Supabase if they are being edited as strings.
         let specsToSave = currentProduct.specs;
         let featuresToSave = currentProduct.features;
         
         if (typeof specsToSave === 'string') {
             try { specsToSave = specsToSave.split(',').map(s => s.trim()); } catch(e) { specsToSave = []; }
         }
-        
-        // For features, it might be complex JSON. We assume it's valid if string, else we keep the array.
-        // For a full implementation, you'd want proper nested inputs.
         
         const payload = {
             name: currentProduct.name,
@@ -69,11 +66,9 @@ const AdminProducts = () => {
         };
 
         if (currentProduct.id) {
-            // Update
             const { error } = await supabase.from('products').update(payload).eq('id', currentProduct.id);
             if(error) alert('Failed to update');
         } else {
-            // Insert
             const { error } = await supabase.from('products').insert([payload]);
             if(error) alert('Failed to create');
         }
@@ -82,57 +77,61 @@ const AdminProducts = () => {
         refreshProducts();
     };
 
-
-    if (loading) return <div>Loading products...</div>;
+    if (loading) return <div className="admin-loading">Configuring Product Stream...</div>;
 
     if (isEditing) {
         return (
-            <div>
-                <h2>{currentProduct.id ? 'Edit Product' : 'Add New Product'}</h2>
-                <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '15px', maxWidth: '600px', marginTop: '20px' }}>
-                    <div>
-                        <label>Product Name</label>
-                        <input type="text" value={currentProduct.name || ''} onChange={e => setCurrentProduct({...currentProduct, name: e.target.value})} required style={{ width: '100%', padding: '10px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'white' }} />
-                    </div>
-                    <div style={{ display: 'flex', gap: '20px' }}>
-                        <div style={{ flex: 1 }}>
-                            <label>Price (TK)</label>
-                            <input type="number" value={currentProduct.price || 0} onChange={e => setCurrentProduct({...currentProduct, price: Number(e.target.value)})} required style={{ width: '100%', padding: '10px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'white' }} />
+            <div className="admin-card animate-fade-in" style={{ maxWidth: '800px' }}>
+                <h2 style={{ marginBottom: '30px' }}>{currentProduct.id ? 'UPDATE SYSTEM ENTITY' : 'INITIALIZE NEW PRODUCT'}</h2>
+                <form onSubmit={handleSave} className="admin-form">
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
+                        <div>
+                            <label className="metric-label">Product Name</label>
+                            <input type="text" className="admin-input" value={currentProduct.name || ''} onChange={e => setCurrentProduct({...currentProduct, name: e.target.value})} required />
                         </div>
-                        <div style={{ flex: 1 }}>
-                            <label>Category</label>
-                            <select value={currentProduct.category || ''} onChange={e => setCurrentProduct({...currentProduct, category: e.target.value})} style={{ width: '100%', padding: '10px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'white' }}>
+                        <div>
+                            <label className="metric-label">Category</label>
+                            <select className="admin-input" value={currentProduct.category || ''} onChange={e => setCurrentProduct({...currentProduct, category: e.target.value})}>
                                 <option value="communicators">Communicators</option>
                                 <option value="dashcams">Dashcams</option>
                                 <option value="accessories">Accessories</option>
                             </select>
                         </div>
                     </div>
-                    <div style={{ display: 'flex', gap: '20px' }}>
-                        <div style={{ flex: 1 }}>
-                            <label>Image URL or Path</label>
-                            <input type="text" value={currentProduct.image || ''} onChange={e => setCurrentProduct({...currentProduct, image: e.target.value})} style={{ width: '100%', padding: '10px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'white' }} />
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '20px', marginBottom: '20px' }}>
+                        <div>
+                            <label className="metric-label">Market Price (TK)</label>
+                            <input type="number" className="admin-input" value={currentProduct.price || 0} onChange={e => setCurrentProduct({...currentProduct, price: Number(e.target.value)})} required />
                         </div>
-                        <div style={{ flex: 1 }}>
-                            <label>Badge (Optional - e.g. NEW, SALE)</label>
-                            <input type="text" value={currentProduct.badge || ''} onChange={e => setCurrentProduct({...currentProduct, badge: e.target.value})} placeholder="e.g. NEW ARRIVAL" style={{ width: '100%', padding: '10px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'white' }} />
+                        <div>
+                            <label className="metric-label">Asset Path (Image)</label>
+                            <input type="text" className="admin-input" value={currentProduct.image || ''} onChange={e => setCurrentProduct({...currentProduct, image: e.target.value})} />
                         </div>
                     </div>
-                    <div>
-                        <label>Old Price (Optional - for strikethrough)</label>
-                        <input type="number" value={currentProduct.old_price || ''} onChange={e => setCurrentProduct({...currentProduct, old_price: Number(e.target.value)})} placeholder="Original price before discount" style={{ width: '100%', padding: '10px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'white' }} />
+
+                    <div style={{ marginBottom: '20px' }}>
+                        <label className="metric-label">Entity Descriptions</label>
+                        <textarea className="admin-input" rows="4" value={currentProduct.description || ''} onChange={e => setCurrentProduct({...currentProduct, description: e.target.value})}></textarea>
                     </div>
-                    <div>
-                        <label>Description (Bio)</label>
-                        <textarea rows="4" value={currentProduct.description || ''} onChange={e => setCurrentProduct({...currentProduct, description: e.target.value})} style={{ width: '100%', padding: '10px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'white' }}></textarea>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '30px' }}>
+                        <div>
+                            <label className="metric-label">Identity Badge</label>
+                            <input type="text" className="admin-input" value={currentProduct.badge || ''} onChange={e => setCurrentProduct({...currentProduct, badge: e.target.value})} placeholder="e.g. NEW" />
+                        </div>
+                        <div>
+                            <label className="metric-label">Status</label>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
+                                <input type="checkbox" checked={currentProduct.is_active} onChange={e => setCurrentProduct({...currentProduct, is_active: e.target.checked})} />
+                                <span style={{ fontSize: '0.9rem' }}>Active in System</span>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <label>Specs (comma separated)</label>
-                        <input type="text" value={Array.isArray(currentProduct.specs) ? currentProduct.specs.join(', ') : currentProduct.specs} onChange={e => setCurrentProduct({...currentProduct, specs: e.target.value})} style={{ width: '100%', padding: '10px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'white' }} />
-                    </div>
-                    <div style={{ display: 'flex', gap: '15px', marginTop: '10px' }}>
-                        <button type="submit" className="btn btn-primary">Save Product</button>
-                        <button type="button" className="btn btn-outline" onClick={() => setIsEditing(false)}>Cancel</button>
+
+                    <div style={{ display: 'flex', gap: '15px' }}>
+                        <button type="submit" className="admin-btn admin-btn-primary">SAVE CHANGES</button>
+                        <button type="button" className="admin-btn admin-btn-outline" onClick={() => setIsEditing(false)}>CANCEL</button>
                     </div>
                 </form>
             </div>
@@ -140,52 +139,58 @@ const AdminProducts = () => {
     }
 
     return (
-        <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h2>Products Management</h2>
-                <button onClick={handleCreate} className="btn btn-primary">+ Add Product</button>
+        <div className="admin-products animate-fade-in">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+                <h1 className="admin-page-title">PRODUCT <span style={{ color: 'var(--admin-accent)' }}>INVENTORY</span></h1>
+                <button onClick={handleCreate} className="admin-btn admin-btn-primary">+ NEW ASSET</button>
             </div>
-            <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                    <thead>
-                        <tr style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)' }}>
-                            <th style={{ padding: '12px', width: '60px' }}>Image</th>
-                            <th style={{ padding: '12px' }}>Name</th>
-                            <th style={{ padding: '12px' }}>Category</th>
-                            <th style={{ padding: '12px' }}>Price</th>
-                            <th style={{ padding: '12px' }}>Status</th>
-                            <th style={{ padding: '12px' }}>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {products.map(product => (
-                            <tr key={product.id} style={{ borderBottom: '1px solid var(--border-color)', opacity: product.is_active ? 1 : 0.5 }}>
-                                <td style={{ padding: '12px' }}>
-                                    <img src={product.image} alt={product.name} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
-                                </td>
-                                <td style={{ padding: '12px' }}>{product.name}</td>
-                                <td style={{ padding: '12px' }}>{product.category}</td>
-                                <td style={{ padding: '12px' }}>৳{Number(product.price).toLocaleString()}</td>
-                                <td style={{ padding: '12px' }}>
-                                    <button 
-                                        onClick={() => toggleActive(product.id, product.is_active)}
-                                        style={{ 
-                                            background: product.is_active ? 'rgba(39, 174, 96, 0.2)' : 'rgba(231, 76, 60, 0.2)',
-                                            color: product.is_active ? '#2ecc71' : '#e74c3c',
-                                            border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer'
-                                        }}
-                                    >
-                                        {product.is_active ? 'Active' : 'Inactive'}
-                                    </button>
-                                </td>
-                                <td style={{ padding: '12px' }}>
-                                    <button onClick={() => handleEdit(product)} style={{ background: 'transparent', color: 'var(--accent-cyan)', border: 'none', marginRight: '10px', cursor: 'pointer' }}>Edit</button>
-                                    <button onClick={() => handleDelete(product.id)} style={{ background: 'transparent', color: '#e74c3c', border: 'none', cursor: 'pointer' }}>Delete</button>
-                                </td>
+
+            <div className="admin-card">
+                <div className="admin-table-container">
+                    <table className="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Preview</th>
+                                <th>Name</th>
+                                <th>Category</th>
+                                <th>Price</th>
+                                <th>Stream Status</th>
+                                <th>Admin Actions</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {products.map(product => (
+                                <tr key={product.id} style={{ opacity: product.is_active ? 1 : 0.4 }}>
+                                    <td>
+                                        <img src={product.image} alt={product.name} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--admin-border)' }} />
+                                    </td>
+                                    <td style={{ fontWeight: 600 }}>{product.name}</td>
+                                    <td>
+                                        <span className="status-badge" style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--admin-text-muted)' }}>
+                                            {product.category}
+                                        </span>
+                                    </td>
+                                    <td style={{ color: 'var(--admin-accent)', fontWeight: 700 }}>৳{Number(product.price).toLocaleString()}</td>
+                                    <td>
+                                        <button 
+                                            onClick={() => toggleActive(product.id, product.is_active)}
+                                            className={`status-badge ${product.is_active ? 'status-completed' : 'status-cancelled'}`}
+                                            style={{ cursor: 'pointer', border: 'none' }}
+                                        >
+                                            {product.is_active ? 'ONLINE' : 'OFFLINE'}
+                                        </button>
+                                    </td>
+                                    <td>
+                                        <div style={{ display: 'flex', gap: '10px' }}>
+                                            <button onClick={() => handleEdit(product)} className="admin-btn admin-btn-outline" style={{ padding: '6px 12px', fontSize: '0.75rem' }}>EDIT</button>
+                                            <button onClick={() => handleDelete(product.id)} className="admin-btn admin-btn-outline" style={{ padding: '6px 12px', fontSize: '0.75rem', color: 'var(--admin-danger)' }}>ERASE</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     );
