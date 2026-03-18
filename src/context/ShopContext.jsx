@@ -76,6 +76,19 @@ export const ShopProvider = ({ children }) => {
 
   useEffect(() => {
     fetchProducts();
+
+    // Subscribe to real-time changes
+    const subscription = supabase
+      .channel('public:products')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
+        console.log("Real-time update received!");
+        fetchProducts();
+      })
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   // Cart Functions
