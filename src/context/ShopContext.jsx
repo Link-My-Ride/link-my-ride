@@ -49,16 +49,20 @@ export const ShopProvider = ({ children }) => {
 
   const seedDatabase = async () => {
     try {
-      const formattedProducts = productsList.map(p => ({
-        name: p.name,
-        price: p.price,
-        image: p.image,
-        category: p.category,
-        description: p.desc,
-        is_active: p.featured,
-        specs: JSON.stringify(p.specs || []),
-        features: JSON.stringify(p.features || [])
-      }));
+      const formattedProducts = productsList.map(p => {
+        // Extract filename from the import path or just use a predictable one
+        const fileName = p.image.split('/').pop()?.split('?')[0] || '';
+        return {
+          name: p.name,
+          price: p.price,
+          image: `/images/products/${fileName}`,
+          category: p.category,
+          description: p.desc,
+          is_active: true, // Force active for seeded data
+          specs: JSON.stringify(p.specs || []),
+          features: JSON.stringify(p.features || [])
+        };
+      });
 
       const { error } = await supabase.from('products').insert(formattedProducts);
       if (error) throw error;
