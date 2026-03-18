@@ -14,7 +14,7 @@
 .section-subtitle {
     color: var(--text-secondary);
     font-size: 1.05rem;
-    max-width: 600px;
+    max-width: 700px;
     margin: 15px auto 0;
     line-height: 1.6;
 }
@@ -26,12 +26,13 @@
 }
 
 .reason-card {
-    background-color: var(--bg-primary);
-    border: 1px solid var(--border-color);
+    background-color: var(--bg-secondary);
+    border: none;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
     border-radius: var(--radius-lg);
     padding: 40px 30px;
     text-align: center;
-    transition: var(--transition);
+    transition: 0.3s;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -53,9 +54,8 @@
 }
 
 .reason-card:hover {
-    background-color: var(--bg-secondary);
-    transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
 }
 
 .reason-card:hover::after {

@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import './ProductDetails.css';
-import { getProductById, productsList } from '../data/siteContent';
+import { getProductById, productsList, getProductsByCategory } from '../data/siteContent';
+import '../components/home/GadgetsSection.css';
 
 const ProductDetails = () => {
     const [deliveryOption, setDeliveryOption] = useState('inside');
     const [quantity, setQuantity] = useState(1);
     const [product, setProduct] = useState(null);
     const [showSuccess, setShowSuccess] = useState(false);
+    const [relatedProducts, setRelatedProducts] = useState([]);
 
     // Form states
     const [formData, setFormData] = useState({ name: '', address: '', phone: '' });
@@ -18,6 +20,12 @@ const ProductDetails = () => {
             const foundProduct = getProductById(id);
             if (foundProduct) {
                 setProduct(foundProduct);
+                
+                // Fetch related featured products
+                const categoryProducts = getProductsByCategory(foundProduct.category);
+                const related = categoryProducts.filter(p => p.id !== foundProduct.id && p.featured).slice(0, 4);
+                setRelatedProducts(related);
+
                 window.scrollTo(0, 0);
                 return;
             }
@@ -194,8 +202,34 @@ const ProductDetails = () => {
                         <div className="trust-item"><span>🛡️</span> 1-YEAR WARRANTY</div>
                     </div>
                 </div>
-
             </div>
+
+            {/* Related Products Section */}
+            {relatedProducts.length > 0 && (
+                <section className="related-products-section" style={{ marginTop: '80px' }}>
+                    <div className="section-header" style={{ marginBottom: '30px', borderBottom: '2px solid rgba(255, 255, 255, 0.1)', paddingBottom: '10px' }}>
+                        <h2 className="section-title" style={{ fontSize: '1.8rem', fontWeight: 800, textTransform: 'uppercase' }}>Related Products</h2>
+                    </div>
+
+                    <div className="gadgets-grid">
+                        {relatedProducts.map((p, i) => (
+                            <div className="product-card" key={i} onClick={() => window.location.hash = `#product/${p.id}`} style={{ cursor: 'pointer' }}>
+                                <div className="product-img-wrapper">
+                                    {p.badge && <span className="product-badge">{p.badge}</span>}
+                                    <img src={p.image} alt={p.name} className="product-img" />
+                                </div>
+                                <div className="product-info">
+                                    <h3 className="product-name">{p.name}</h3>
+                                    <p className="product-desc" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{p.desc}</p>
+                                    <div className="product-footer" style={{ marginTop: 'auto', paddingTop: '15px' }}>
+                                        <span className="product-price">৳{p.price.toLocaleString()}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            )}
 
             <style jsx>{`
                 .success-popup {

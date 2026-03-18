@@ -11,13 +11,19 @@ const Home = () => {
     return (
         <div className="home-page">
             <HeroSection />
-            <div className="promotions-row">
-                <FreeGiftsSection />
-                <OffersSection />
+            <div className="bg-white" style={{ paddingBottom: '80px' }}>
+                <div className="promotions-row">
+                    <FreeGiftsSection />
+                    <OffersSection />
+                </div>
             </div>
-            <GadgetsSection />
+            <div className="bg-gray">
+                <GadgetsSection />
+            </div>
             <PromoBanner />
-            <WhyChooseUs />
+            <div className="bg-white">
+                <WhyChooseUs />
+            </div>
         </div>
     );
 };

@@ -1,8 +1,8 @@
 .promotions-row {
     display: flex;
-    gap: 2rem;
+    gap: 24px;
     max-width: 1400px;
-    margin: 0 auto;
+    margin: 40px auto 0;
     padding: 0 5%;
 }
 

@@ -4,19 +4,19 @@ import './WhyChooseUs.css';
 const WhyChooseUs = () => {
     const reasons = [
         {
-            icon: '🛠️',
-            title: 'Precision Engineered',
-            desc: 'Our gadgets undergo rigorous vibration and weather testing to ensure they outlast whatever you need them for.'
+            icon: '⚡',
+            title: 'Fast Setup',
+            desc: 'Get connected and hit the road in minutes with our intuitive rider-first installation process.'
         },
         {
-            icon: '🏍️',
-            title: 'Rider Focused',
-            desc: 'Every feature is designed to be easily accessible even while wearing thick winter gloves at 100km/h.'
+            icon: '🔊',
+            title: 'Crystal Clear Audio',
+            desc: 'Advanced noise-canceling technology guarantees you hear every word, even at highway speeds.'
         },
         {
-            icon: '🔄',
-            title: 'Seamless Ecosystem',
-            desc: 'Sync your communicator, dashcams, and phone in one unified interface with the LinkMyRide Mobile App.'
+            icon: '📡',
+            title: 'Long Range Connectivity',
+            desc: 'Stay linked with your group up to 2km away using our ultra-stable network.'
         }
     ];
 

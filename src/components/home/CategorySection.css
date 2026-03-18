@@ -1,6 +1,4 @@
-.section-padding {
-    padding: 80px 24px;
-}
+/* using global .section-padding */
 
 .section-header {
     display: flex;
@@ -111,5 +109,9 @@
 
     .category-card {
         height: 300px;
+    }
+
+    .section-header {
+        margin-bottom: 25px;
     }
 }

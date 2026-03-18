@@ -9,11 +9,6 @@ import './index.css';
 
 function App() {
   const [currentRoute, setCurrentRoute] = useState(window.location.hash || '#home');
-  const [theme, setTheme] = useState('light'); // Set default to light to show user their request immediately
-
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-  }, [theme]);
 
   useEffect(() => {
     const handleHashChange = () => setCurrentRoute(window.location.hash);
@@ -59,7 +54,7 @@ function App() {
 
   return (
     <div className="app-container">
-      <Navbar theme={theme} toggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')} />
+      <Navbar />
       <main>
         {renderPage()}
       </main>
