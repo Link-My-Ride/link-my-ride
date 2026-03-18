@@ -13,7 +13,46 @@ const ProductDetails = () => {
     const [relatedProducts, setRelatedProducts] = useState([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Form states
+    const [formData, setFormData] = useState({ name: '', address: '', phone: '' });
+
+    useEffect(() => {
+        const loadProduct = () => {
+            const hash = window.location.hash;
+            if (hash.startsWith('#product/')) {
+                const id = hash.replace('#product/', '');
+                const foundProduct = products.find(p => String(p.id) === String(id));
+                
+                if (foundProduct) {
+                    setProduct(foundProduct);
+                    const rel = products.filter(p => String(p.id) !== String(id) && p.category === foundProduct.category).slice(0, 4);
+                    setRelatedProducts(rel);
+                    window.scrollTo(0, 0);
+                }
+            }
+        };
+
+        loadProduct();
+        window.addEventListener('hashchange', loadProduct);
+        return () => window.removeEventListener('hashchange', loadProduct);
+    }, [products, window.location.hash]);
+
+    if (loading || !product) return <div className="container section-padding">Loading...</div>;
+
+    const deliveryFee = deliveryOption === 'inside' ? 60 : 100;
+    const totalPayable = (product.price * quantity) + deliveryFee;
+
+    const handleQuantityChange = (amount) => {
+        setQuantity(prev => {
+            const newQ = prev + amount;
+            return newQ < 1 ? 1 : newQ;
+        });
+    };
+
+    const handleWhatsAppOrder = () => {
+        const message = `Hello LinkMyRide! I want to order:\n\nProduct: *${product.name}*\nQuantity: *${quantity}*\nDelivery: *${deliveryOption === 'inside' ? 'Inside Dhaka' : 'Outside Dhaka'}*\nTotal Price payable: *${totalPayable} TK*\n\nPlease confirm my order.`;
+        const waLink = `https://wa.me/8801622864377?text=${encodeURIComponent(message)}`;
+        window.open(waLink, '_blank');
+    };
 
     const handleWebsiteOrder = async (e) => {
         e.preventDefault();
