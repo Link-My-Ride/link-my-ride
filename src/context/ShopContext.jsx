@@ -36,10 +36,18 @@ export const ShopProvider = ({ children }) => {
         try { if (typeof specs === 'string') specs = JSON.parse(specs); } catch (e) {}
         try { if (typeof features === 'string') features = JSON.parse(features); } catch (e) {}
 
+        // Parse images array with backward compatibility
+        let images = item.images;
+        try { if (typeof images === 'string') images = JSON.parse(images); } catch (e) {}
+        if (!Array.isArray(images) || images.length === 0) {
+          images = item.image ? [item.image] : [];
+        }
+
         return {
           ...item,
           specs: specs || [],
-          features: features || []
+          features: features || [],
+          images: images
         };
       });
       setProducts(formattedData);

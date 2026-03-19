@@ -177,24 +177,38 @@
 }
 
 @media (max-width: 600px) {
+    .hero-slider {
+        height: 70vh;
+    }
+
     .hero-slide {
         padding: 48px 16px;
         min-height: 50vh;
     }
 
     .hero-split-title {
-        font-size: 2.5rem;
-        margin-bottom: 20px;
+        font-size: 2.2rem;
+        margin-bottom: 16px;
+        letter-spacing: -0.5px;
     }
 
     .hero-split-desc {
-        font-size: 1.1rem;
-        margin-bottom: 30px;
+        font-size: 1rem;
+        margin-bottom: 24px;
+        line-height: 1.5;
+    }
+
+    .hero-pill {
+        font-size: 0.7rem;
+        padding: 5px 12px;
+        margin-bottom: 18px;
     }
 
     .btn-split {
-        padding: 14px 30px;
-        font-size: 1rem;
+        padding: 12px 24px;
+        font-size: 0.95rem;
+        width: 100%;
+        max-width: 280px;
     }
     
     .hero-content {

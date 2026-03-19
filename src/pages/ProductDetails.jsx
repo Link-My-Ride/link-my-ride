@@ -1,4 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Pagination, Thumbs, FreeMode } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+import 'swiper/css/thumbs';
+import 'swiper/css/free-mode';
 import './ProductDetails.css';
 import { useShop } from '../context/ShopContext';
 import { supabase } from '../lib/supabase';
@@ -12,6 +19,7 @@ const ProductDetails = () => {
     const [showSuccess, setShowSuccess] = useState(false);
     const [relatedProducts, setRelatedProducts] = useState([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [thumbsSwiper, setThumbsSwiper] = useState(null);
 
     const [formData, setFormData] = useState({ name: '', address: '', phone: '' });
 
@@ -24,6 +32,7 @@ const ProductDetails = () => {
                 
                 if (foundProduct) {
                     setProduct(foundProduct);
+                    setThumbsSwiper(null);
                     const rel = products.filter(p => String(p.id) !== String(id) && p.category === foundProduct.category).slice(0, 4);
                     setRelatedProducts(rel);
                     window.scrollTo(0, 0);
@@ -40,6 +49,11 @@ const ProductDetails = () => {
 
     const deliveryFee = deliveryOption === 'inside' ? 60 : 100;
     const totalPayable = (product.price * quantity) + deliveryFee;
+
+    // Get images — use images array, fall back to single image
+    const productImages = product.images && product.images.length > 0 
+        ? product.images 
+        : (product.image ? [product.image] : []);
 
     const handleQuantityChange = (amount) => {
         setQuantity(prev => {
@@ -61,7 +75,7 @@ const ProductDetails = () => {
         try {
             const orderData = {
                 customer_name: formData.name,
-                customer_email: 'website-order@no-email.com', // Placeholder or add email field
+                customer_email: 'website-order@no-email.com',
                 customer_phone: formData.phone,
                 customer_address: formData.address,
                 total_amount: totalPayable,
@@ -108,11 +122,49 @@ const ProductDetails = () => {
                 <div className="product-showcase reveal">
                     <div className="product-img-box">
                         {product.badge && <span className="badge new-arrival-badge">{product.badge}</span>}
-                        <img
-                            src={product.image}
-                            alt={product.name}
-                        />
+                        
+                        {productImages.length <= 1 ? (
+                            /* Single image — no slider */
+                            <img src={productImages[0]} alt={product.name} />
+                        ) : (
+                            /* Multiple images — Swiper slider */
+                            <div className="product-slider-wrapper">
+                                <Swiper
+                                    modules={[Navigation, Pagination, Thumbs, FreeMode]}
+                                    navigation
+                                    pagination={{ clickable: true }}
+                                    thumbs={{ swiper: thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null }}
+                                    loop={productImages.length > 2}
+                                    className="product-main-slider"
+                                >
+                                    {productImages.map((img, idx) => (
+                                        <SwiperSlide key={idx}>
+                                            <img src={img} alt={`${product.name} - ${idx + 1}`} className="slider-main-img" />
+                                        </SwiperSlide>
+                                    ))}
+                                </Swiper>
+                            </div>
+                        )}
                     </div>
+
+                    {/* Thumbnail strip — only when multiple images */}
+                    {productImages.length > 1 && (
+                        <Swiper
+                            modules={[FreeMode, Thumbs]}
+                            onSwiper={setThumbsSwiper}
+                            spaceBetween={10}
+                            slidesPerView={Math.min(productImages.length, 5)}
+                            freeMode
+                            watchSlidesProgress
+                            className="product-thumb-slider"
+                        >
+                            {productImages.map((img, idx) => (
+                                <SwiperSlide key={idx}>
+                                    <img src={img} alt={`Thumb ${idx + 1}`} className="slider-thumb-img" />
+                                </SwiperSlide>
+                            ))}
+                        </Swiper>
+                    )}
 
                     <div className="product-main-info">
                         <h1 className="product-title">
@@ -243,7 +295,7 @@ const ProductDetails = () => {
                             <div className="product-card" key={i} onClick={() => window.location.hash = `#product/${p.id}`} style={{ cursor: 'pointer' }}>
                                 <div className="product-img-wrapper">
                                     {p.badge && <span className="product-badge">{p.badge}</span>}
-                                    <img src={p.image} alt={p.name} className="product-img" />
+                                    <img src={p.images?.[0] || p.image} alt={p.name} className="product-img" />
                                 </div>
                                 <div className="product-info">
                                     <h3 className="product-name">{p.name}</h3>

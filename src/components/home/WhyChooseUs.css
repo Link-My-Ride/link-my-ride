@@ -101,3 +101,36 @@
         grid-template-columns: 1fr;
     }
 }
+
+@media (max-width: 600px) {
+    .reason-card {
+        padding: 28px 20px;
+    }
+
+    .reason-icon-wrapper {
+        width: 56px;
+        height: 56px;
+        margin-bottom: 18px;
+    }
+
+    .reason-icon {
+        font-size: 1.6rem;
+    }
+
+    .reason-title {
+        font-size: 1.1rem;
+        margin-bottom: 10px;
+    }
+
+    .reason-desc {
+        font-size: 0.85rem;
+    }
+
+    .section-subtitle {
+        font-size: 0.95rem;
+    }
+
+    .mb-12 {
+        margin-bottom: 30px;
+    }
+}

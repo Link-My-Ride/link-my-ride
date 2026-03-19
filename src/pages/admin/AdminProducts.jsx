@@ -1,15 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { useShop } from '../../context/ShopContext';
 import { supabase } from '../../lib/supabase';
 import './AdminDashboard.css';
+
+const MAX_IMAGES = 5;
+const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const BUCKET_NAME = 'product-images';
 
 const AdminProducts = () => {
     const { products, refreshProducts, loading } = useShop();
     const [isEditing, setIsEditing] = useState(false);
     const [currentProduct, setCurrentProduct] = useState({});
+    const [uploadingImages, setUploadingImages] = useState(false);
+    const [dragOver, setDragOver] = useState(false);
+    const [draggedThumbIdx, setDraggedThumbIdx] = useState(null);
+    const fileInputRef = useRef(null);
 
     const handleEdit = (product) => {
-        setCurrentProduct(product);
+        setCurrentProduct({
+            ...product,
+            images: product.images || (product.image ? [product.image] : [])
+        });
         setIsEditing(true);
     };
 
@@ -18,6 +30,7 @@ const AdminProducts = () => {
             name: '',
             price: 0,
             image: '',
+            images: [],
             category: 'accessories',
             description: '',
             is_active: true,
@@ -42,6 +55,134 @@ const AdminProducts = () => {
         else refreshProducts();
     };
 
+    // ── Image Upload Logic ──────────────────────────────────────
+    const validateFile = (file) => {
+        if (!ALLOWED_TYPES.includes(file.type)) {
+            return `"${file.name}" is not supported. Use JPG, PNG, or WebP.`;
+        }
+        if (file.size > MAX_FILE_SIZE) {
+            return `"${file.name}" is too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Max 2MB.`;
+        }
+        return null;
+    };
+
+    const uploadFiles = async (files) => {
+        const currentImages = currentProduct.images || [];
+        const slotsAvailable = MAX_IMAGES - currentImages.length;
+
+        if (slotsAvailable <= 0) {
+            alert(`Maximum ${MAX_IMAGES} images allowed.`);
+            return;
+        }
+
+        const filesToUpload = Array.from(files).slice(0, slotsAvailable);
+        const errors = [];
+
+        for (const file of filesToUpload) {
+            const err = validateFile(file);
+            if (err) errors.push(err);
+        }
+
+        if (errors.length > 0) {
+            alert(errors.join('\n'));
+            return;
+        }
+
+        setUploadingImages(true);
+        const newUrls = [];
+
+        for (const file of filesToUpload) {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
+            const filePath = `products/${fileName}`;
+
+            const { error } = await supabase.storage
+                .from(BUCKET_NAME)
+                .upload(filePath, file, { cacheControl: '3600', upsert: false });
+
+            if (error) {
+                console.error('Upload error:', error);
+                alert(`Failed to upload "${file.name}": ${error.message}`);
+                continue;
+            }
+
+            const { data: urlData } = supabase.storage
+                .from(BUCKET_NAME)
+                .getPublicUrl(filePath);
+
+            if (urlData?.publicUrl) {
+                newUrls.push(urlData.publicUrl);
+            }
+        }
+
+        setCurrentProduct(prev => ({
+            ...prev,
+            images: [...(prev.images || []), ...newUrls],
+            image: prev.images?.length === 0 && newUrls.length > 0 ? newUrls[0] : prev.image
+        }));
+
+        setUploadingImages(false);
+    };
+
+    const handleFileSelect = (e) => {
+        if (e.target.files.length > 0) {
+            uploadFiles(e.target.files);
+        }
+        e.target.value = '';
+    };
+
+    const handleDrop = useCallback((e) => {
+        e.preventDefault();
+        setDragOver(false);
+        if (e.dataTransfer.files.length > 0) {
+            uploadFiles(e.dataTransfer.files);
+        }
+    }, [currentProduct.images]);
+
+    const handleDragOver = (e) => {
+        e.preventDefault();
+        setDragOver(true);
+    };
+
+    const handleDragLeave = (e) => {
+        e.preventDefault();
+        setDragOver(false);
+    };
+
+    const removeImage = (index) => {
+        setCurrentProduct(prev => {
+            const newImages = prev.images.filter((_, i) => i !== index);
+            return {
+                ...prev,
+                images: newImages,
+                image: newImages.length > 0 ? newImages[0] : ''
+            };
+        });
+    };
+
+    // ── Thumbnail Drag Reorder ──────────────────────────────────
+    const handleThumbDragStart = (idx) => {
+        setDraggedThumbIdx(idx);
+    };
+
+    const handleThumbDragOver = (e, idx) => {
+        e.preventDefault();
+        if (draggedThumbIdx === null || draggedThumbIdx === idx) return;
+        
+        setCurrentProduct(prev => {
+            const newImages = [...prev.images];
+            const [removed] = newImages.splice(draggedThumbIdx, 1);
+            newImages.splice(idx, 0, removed);
+            setDraggedThumbIdx(idx);
+            return { ...prev, images: newImages, image: newImages[0] || '' };
+        });
+    };
+
+    const handleThumbDragEnd = () => {
+        setDraggedThumbIdx(null);
+    };
+
+    // ── Save Product ────────────────────────────────────────────
     const handleSave = async (e) => {
         e.preventDefault();
         
@@ -51,12 +192,15 @@ const AdminProducts = () => {
         if (typeof specsToSave === 'string') {
             try { specsToSave = specsToSave.split(',').map(s => s.trim()); } catch(e) { specsToSave = []; }
         }
+
+        const images = currentProduct.images || [];
         
         const payload = {
             name: currentProduct.name,
             price: currentProduct.price,
             old_price: currentProduct.old_price,
-            image: currentProduct.image,
+            image: images.length > 0 ? images[0] : currentProduct.image,
+            images: images,
             category: currentProduct.category,
             description: currentProduct.description,
             is_active: currentProduct.is_active,
@@ -80,6 +224,8 @@ const AdminProducts = () => {
     if (loading) return <div className="admin-loading">Configuring Product Stream...</div>;
 
     if (isEditing) {
+        const images = currentProduct.images || [];
+
         return (
             <div className="admin-card animate-fade-in" style={{ maxWidth: '800px' }}>
                 <h2 style={{ marginBottom: '30px' }}>{currentProduct.id ? 'UPDATE SYSTEM ENTITY' : 'INITIALIZE NEW PRODUCT'}</h2>
@@ -99,19 +245,84 @@ const AdminProducts = () => {
                         </div>
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '20px', marginBottom: '20px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
                         <div>
                             <label className="metric-label">Market Price (TK)</label>
                             <input type="number" className="admin-input" value={currentProduct.price || 0} onChange={e => setCurrentProduct({...currentProduct, price: Number(e.target.value)})} required />
                         </div>
                         <div>
-                            <label className="metric-label">Asset Path (Image)</label>
-                            <input type="text" className="admin-input" value={currentProduct.image || ''} onChange={e => setCurrentProduct({...currentProduct, image: e.target.value})} />
+                            <label className="metric-label">Old Price (TK) — optional</label>
+                            <input type="number" className="admin-input" value={currentProduct.old_price || ''} onChange={e => setCurrentProduct({...currentProduct, old_price: Number(e.target.value) || null})} />
                         </div>
                     </div>
 
+                    {/* ── Image Upload Zone ────────────────────────── */}
                     <div style={{ marginBottom: '20px' }}>
-                        <label className="metric-label">Entity Descriptions</label>
+                        <label className="metric-label">Product Images ({images.length}/{MAX_IMAGES})</label>
+
+                        {images.length > 0 && (
+                            <div className="image-preview-grid">
+                                {images.map((url, idx) => (
+                                    <div 
+                                        key={idx} 
+                                        className={`image-preview-item ${draggedThumbIdx === idx ? 'dragging' : ''}`}
+                                        draggable
+                                        onDragStart={() => handleThumbDragStart(idx)}
+                                        onDragOver={(e) => handleThumbDragOver(e, idx)}
+                                        onDragEnd={handleThumbDragEnd}
+                                    >
+                                        {idx === 0 && <span className="main-image-badge">MAIN</span>}
+                                        <img src={url} alt={`Product ${idx + 1}`} />
+                                        <button 
+                                            type="button" 
+                                            className="image-remove-btn" 
+                                            onClick={() => removeImage(idx)}
+                                            title="Remove image"
+                                        >✕</button>
+                                        <span className="image-order-badge">{idx + 1}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {images.length < MAX_IMAGES && (
+                            <div 
+                                className={`image-upload-zone ${dragOver ? 'drag-over' : ''} ${uploadingImages ? 'uploading' : ''}`}
+                                onDrop={handleDrop}
+                                onDragOver={handleDragOver}
+                                onDragLeave={handleDragLeave}
+                                onClick={() => !uploadingImages && fileInputRef.current?.click()}
+                            >
+                                <input 
+                                    ref={fileInputRef}
+                                    type="file" 
+                                    accept=".jpg,.jpeg,.png,.webp"
+                                    multiple
+                                    onChange={handleFileSelect}
+                                    style={{ display: 'none' }}
+                                />
+                                {uploadingImages ? (
+                                    <div className="upload-zone-content">
+                                        <span className="upload-icon">⏳</span>
+                                        <span className="upload-text">Uploading...</span>
+                                    </div>
+                                ) : (
+                                    <div className="upload-zone-content">
+                                        <span className="upload-icon">📁</span>
+                                        <span className="upload-text">
+                                            Drag & drop or click to upload
+                                        </span>
+                                        <span className="upload-hint">
+                                            JPG, PNG, WebP &bull; Max 2MB each &bull; Up to {MAX_IMAGES - images.length} more
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+
+                    <div style={{ marginBottom: '20px' }}>
+                        <label className="metric-label">Entity Description</label>
                         <textarea className="admin-input" rows="4" value={currentProduct.description || ''} onChange={e => setCurrentProduct({...currentProduct, description: e.target.value})}></textarea>
                     </div>
 
@@ -154,6 +365,7 @@ const AdminProducts = () => {
                                 <th>Name</th>
                                 <th>Category</th>
                                 <th>Price</th>
+                                <th>Images</th>
                                 <th>Stream Status</th>
                                 <th>Admin Actions</th>
                             </tr>
@@ -162,7 +374,7 @@ const AdminProducts = () => {
                             {products.map(product => (
                                 <tr key={product.id} style={{ opacity: product.is_active ? 1 : 0.4 }}>
                                     <td>
-                                        <img src={product.image} alt={product.name} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--admin-border)' }} />
+                                        <img src={product.images?.[0] || product.image} alt={product.name} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--admin-border)' }} />
                                     </td>
                                     <td style={{ fontWeight: 600 }}>{product.name}</td>
                                     <td>
@@ -171,6 +383,11 @@ const AdminProducts = () => {
                                         </span>
                                     </td>
                                     <td style={{ color: 'var(--admin-accent)', fontWeight: 700 }}>৳{Number(product.price).toLocaleString()}</td>
+                                    <td>
+                                        <span className="status-badge" style={{ background: 'rgba(59,130,246,0.1)', color: 'var(--admin-accent)' }}>
+                                            {product.images?.length || 1} img
+                                        </span>
+                                    </td>
                                     <td>
                                         <button 
                                             onClick={() => toggleActive(product.id, product.is_active)}
