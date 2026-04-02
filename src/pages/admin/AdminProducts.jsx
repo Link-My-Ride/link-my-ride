@@ -28,7 +28,7 @@ const AdminProducts = () => {
     const handleCreate = () => {
         setCurrentProduct({
             name: '',
-            price: 0,
+            price: '',
             image: '',
             images: [],
             category: 'accessories',
@@ -102,7 +102,11 @@ const AdminProducts = () => {
 
             if (error) {
                 console.error('Upload error:', error);
-                alert(`Failed to upload "${file.name}": ${error.message}`);
+                if (error.message.includes('Bucket not found')) {
+                    alert(`Upload Failed: The storage bucket "${BUCKET_NAME}" does not exist in Supabase.\n\nPlease create a public bucket named "${BUCKET_NAME}" in your Supabase dashboard.`);
+                } else {
+                    alert(`Failed to upload "${file.name}": ${error.message}`);
+                }
                 continue;
             }
 
@@ -197,24 +201,24 @@ const AdminProducts = () => {
         
         const payload = {
             name: currentProduct.name,
-            price: currentProduct.price,
-            old_price: currentProduct.old_price,
+            price: Number(currentProduct.price) || 0,
+            old_price: currentProduct.old_price || null,
             image: images.length > 0 ? images[0] : currentProduct.image,
-            images: images,
+            images: JSON.stringify(images),
             category: currentProduct.category,
             description: currentProduct.description,
             is_active: currentProduct.is_active,
-            badge: currentProduct.badge,
-            specs: specsToSave,
-            features: featuresToSave
+            badge: currentProduct.badge || null,
+            specs: JSON.stringify(specsToSave || []),
+            features: JSON.stringify(featuresToSave || [])
         };
 
         if (currentProduct.id) {
             const { error } = await supabase.from('products').update(payload).eq('id', currentProduct.id);
-            if(error) alert('Failed to update');
+            if(error) alert(`Failed to update: ${error.message}`);
         } else {
             const { error } = await supabase.from('products').insert([payload]);
-            if(error) alert('Failed to create');
+            if(error) alert(`Failed to create: ${error.message}`);
         }
         
         setIsEditing(false);
@@ -248,7 +252,7 @@ const AdminProducts = () => {
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
                         <div>
                             <label className="metric-label">Market Price (TK)</label>
-                            <input type="number" className="admin-input" value={currentProduct.price || 0} onChange={e => setCurrentProduct({...currentProduct, price: Number(e.target.value)})} required />
+                            <input type="number" className="admin-input" value={currentProduct.price} onChange={e => setCurrentProduct({...currentProduct, price: e.target.value})} required />
                         </div>
                         <div>
                             <label className="metric-label">Old Price (TK) — optional</label>
